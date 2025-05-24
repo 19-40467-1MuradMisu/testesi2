@@ -1,6 +1,6 @@
 package com.orderservice.orderservice;
 import com.orderservice.orderservice.DatabaseInitializer; 
-import org.springframework.context.annotation.Bean;
+
 
 
 import org.springframework.context.annotation.Configuration;
