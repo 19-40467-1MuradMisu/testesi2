@@ -1,4 +1,4 @@
-package com.orderservice.orderservice.model;
+package com.paymentservice.paymentservice.dto;
 
 public enum DeliveryStatus {
     DELIVERY_PENDING,
