@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.orderservice.orderservice.dto.OrderDto;
@@ -26,6 +27,7 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+    private final KafkaTemplate<String, OrderDto> kafkaTemplate;
 
     public List<OrderDto> getAllOrders() {
         List<Order> orders = new ArrayList<>();
@@ -39,6 +41,9 @@ public class OrderService {
                 .userId(order.getUserId())
                 .price(order.getPrice())
                 .productId(order.getProductId())
+                .orderStatus(order.getOrderStatus())
+                .paymentStatus(order.getPaymentStatus())
+                .deliveryStatus(order.getDeliveryStatus())
                 .build();
     }
 
@@ -48,6 +53,9 @@ public class OrderService {
                 .userId(orderDto.getUserId())
                 .price(orderDto.getPrice())
                 .productId(orderDto.getProductId())
+                .orderStatus(orderDto.getOrderStatus())
+                .paymentStatus(orderDto.getPaymentStatus())
+                .deliveryStatus(orderDto.getDeliveryStatus())
                 .build();
 
         // Setting the Order status to CREATED, the payment status to Pending, and delivery status to Pending
@@ -55,8 +63,32 @@ public class OrderService {
         order.setPaymentStatus(PaymentStatus.PAYMENT_PENDING);
         order.setDeliveryStatus(DeliveryStatus.DELIVERY_PENDING);
 
+    
+        // Save the order to the database
+
+        orderRepository.save(order);
+
+        // Send the orderDto to the Kafka topic
+        orderDto.setOrderStatus(OrderStatus.ORDER_CREATED);
+        orderDto.setPaymentStatus(PaymentStatus.PAYMENT_PENDING);
+        orderDto.setDeliveryStatus(DeliveryStatus.DELIVERY_PENDING);
+
+        kafkaTemplate.send("orderCreatedTopic", orderDto);
+
         // Save the order to in its current state in the Database
+        
+    }
+    @KafkaListener(topics = "deliveryTopic", groupId = "order-group")
+    public void updateDeliveryInfo(OrderDto orderDto) {
+        Order order = Order.builder()
+            .id(orderDto.getId())
+            .userId(orderDto.getUserId())
+            .price(orderDto.getPrice())
+            .productId(orderDto.getProductId())
+            .orderStatus(orderDto.getOrderStatus())
+            .paymentStatus(orderDto.getPaymentStatus())
+            .deliveryStatus(orderDto.getDeliveryStatus())
+            .build();
         orderRepository.save(order);
     }
-
 }

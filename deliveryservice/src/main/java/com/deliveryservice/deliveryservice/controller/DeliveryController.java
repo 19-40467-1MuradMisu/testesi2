@@ -1,6 +1,7 @@
 package com.deliveryservice.deliveryservice.controller;
 
-import com.deliveryservice.deliveryservice.dto.DeliveryRequestDto;
+import com.deliveryservice.deliveryservice.dto.OrderDto;
+import com.deliveryservice.deliveryservice.model.Delivery;
 import com.deliveryservice.deliveryservice.model.DeliveryStatus;
 import com.deliveryservice.deliveryservice.service.DeliveryService;
 
@@ -12,19 +13,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class DeliveryController {
 
-    @Autowired
-    private DeliveryService deliveryService;
+@Autowired
+private DeliveryService deliveryService;
 
-    @PostMapping("/delivery")
-    public ResponseEntity<String> createDelivery(@RequestBody DeliveryRequestDto dto) {
-        deliveryService.createDelivery(dto);
-        return ResponseEntity.ok("Delivery created");
-    }
+@PostMapping("/delivery")
+    public ResponseEntity<String> completeDelivery(@RequestBody OrderDto orderDto) {
+        deliveryService.completeDelivery(orderDto);
+        return ResponseEntity.ok("Delivery marked as completed");
+}
 
-    @PutMapping("/delivery/{orderId}/status")
-    public ResponseEntity<String> updateStatus(@PathVariable Long orderId,
-                                               @RequestParam DeliveryStatus status) {
-        deliveryService.updateDeliveryStatus(orderId, status);
-        return ResponseEntity.ok("Delivery status updated");
+
+
+@GetMapping("/delivery/{orderId}")
+    public ResponseEntity<Delivery> getDeliveryByOrderId(@PathVariable Integer orderId) {
+        Delivery delivery = deliveryService.getDeliveryByOrderId(orderId);
+        return ResponseEntity.ok(delivery);
     }
+    
 }

@@ -1,0 +1,15 @@
+##   create order
+ POST: http://localhost:8082/api/orders
+
+##  Get all orders
+
+GET: http://localhost:8082/api/order
+
+## Paymnet Status Update/ make payment for order
+
+## POST:     http://localhost:8083/api/payment
+
+## Delivery done by Employee
+
+POST: http://localhost:8081/api/delivery
+

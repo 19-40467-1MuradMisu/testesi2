@@ -1,33 +1,54 @@
 package com.deliveryservice.deliveryservice.service;
 
-import com.deliveryservice.deliveryservice.dto.DeliveryRequestDto;
+import com.deliveryservice.deliveryservice.dto.OrderDto;
 import com.deliveryservice.deliveryservice.model.Delivery;
 import com.deliveryservice.deliveryservice.model.DeliveryStatus;
+import com.deliveryservice.deliveryservice.model.PaymentStatus;
 import com.deliveryservice.deliveryservice.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class DeliveryService {
+@Autowired
+private final DeliveryRepository deliveryRepository;
+private final KafkaTemplate<String, OrderDto> kafkaTemplate;
 
-    private final DeliveryRepository deliveryRepository;
 
-    public void createDelivery(DeliveryRequestDto dto) {
+@KafkaListener(topics = "paymentTopic", groupId = "delivery-group")
+public void completeDelivery(OrderDto orderDto) {
+    //  Verify payment is truly completed (from DB or DTO)
+        if (orderDto.getPaymentStatus() != PaymentStatus.PAYMENT_COMPLETED) {
+        
+                return;
+        }
+
+    // Set delivery status
+        orderDto.setDeliveryStatus(DeliveryStatus.DELIVERED);
+
+    // Create and save delivery
         Delivery delivery = Delivery.builder()
-                .orderId(dto.getOrderId())
-                .deliveryAddress(dto.getDeliveryAddress())
-                .deliveryStatus(DeliveryStatus.DELIVERY_PENDING)
+                .orderId(orderDto.getId())
+                .customerName(orderDto.getUserId())
+                .deliveryStatus(orderDto.getDeliveryStatus())
                 .build();
 
         deliveryRepository.save(delivery);
-    }
 
-    public void updateDeliveryStatus(Long orderId, DeliveryStatus status) {
-        Delivery delivery = deliveryRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+    // Send back to OrderService
+        kafkaTemplate.send("deliveryTopic", orderDto);
 
-        delivery.setDeliveryStatus(status);
-        deliveryRepository.save(delivery);
-    }
+}
+
+
+
+public Delivery getDeliveryByOrderId(Integer orderId) {
+return deliveryRepository.findByOrderId(orderId)
+        .orElseThrow(() -> new RuntimeException("Delivery not found for order ID: " + orderId));
+}
 }

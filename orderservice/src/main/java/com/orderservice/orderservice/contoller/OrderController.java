@@ -21,18 +21,18 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 public class OrderController {
 
-    @Autowired
-    private OrderService orderService;
+@Autowired
+private OrderService orderService;
 
-    @GetMapping("/orders")
-    public List<OrderDto> getOrders() {
-    return orderService.getAllOrders();
-    }
+@GetMapping("/orders")
+public List<OrderDto> getOrders() {
+return orderService.getAllOrders();
+}
     
-    @PostMapping("/orders")
-    public ResponseEntity<String>  createOrder(@RequestBody OrderDto orderDto) {
-    orderService.addOrder(orderDto);
-    return ResponseEntity.ok("Order created");
+@PostMapping("/orders")
+public ResponseEntity<String>  createOrder(@RequestBody OrderDto orderDto) {
+orderService.addOrder(orderDto);
+return ResponseEntity.ok("Order created");
 
     }
 }

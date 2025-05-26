@@ -1,6 +1,7 @@
 package com.deliveryservice.deliveryservice.model;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import lombok.*;
 
 @Entity
@@ -12,8 +13,10 @@ import lombok.*;
 public class Delivery {
 
     @Id
-    private Long orderId;
-
+    @GeneratedValue
+    private Integer DeliveryId;
+    private Integer orderId;
+    private Integer customerName;
     private String deliveryAddress;
 
     @Enumerated(EnumType.STRING)
